@@ -6,7 +6,7 @@ import { GoogleAuth } from './components/GoogleAuth';
 import { PersonSelector } from './components/PersonSelector';
 import { ForceTest } from './components/ForceTest';
 
-const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID'; // Replace with your actual client ID
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_API_KEY;
 
 function App() {
   return (
