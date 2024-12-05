@@ -1,14 +1,20 @@
 import React from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import { googleSheetsService } from '../services/googleSheets';
+import { GoogleSheetsStatus } from './GoogleSheetsStatus';
+import { useAuthStore } from '../store/authStore';
 
 export function GoogleAuth() {
+  const setAuthenticated = useAuthStore((state) => state.setAuthenticated);
+
   const onSuccess = (response: any) => {
     googleSheetsService.setAccessToken(response.access_token);
+    setAuthenticated(true);
   };
 
   const onError = () => {
     console.error('Google Login Failed');
+    setAuthenticated(false);
   };
 
   return (
@@ -17,6 +23,7 @@ export function GoogleAuth() {
         Connect to Google Sheets
       </h2>
       <GoogleLogin onSuccess={onSuccess} onError={onError} />
+      <GoogleSheetsStatus />
     </div>
   );
 }

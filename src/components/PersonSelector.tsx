@@ -3,6 +3,7 @@ import { Plus } from 'lucide-react';
 import { googleSheetsService } from '../services/googleSheets';
 import { useForceStore } from '../store/forceStore';
 import { useNamesStore } from '../store/namesStore';
+import { useAuthStore } from '../store/authStore';
 import { Button } from './ui/Button';
 import { AddNameModal } from './AddNameModal';
 
@@ -12,10 +13,13 @@ export function PersonSelector() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { setSelectedPerson, selectedPerson } = useForceStore();
   const { localNames, setLocalNames } = useNamesStore();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   useEffect(() => {
-    loadNames();
-  }, []);
+    if (isAuthenticated) {
+      loadNames();
+    }
+  }, [isAuthenticated]);
 
   const loadNames = async () => {
     try {
@@ -29,6 +33,10 @@ export function PersonSelector() {
       setLoading(false);
     }
   };
+
+  if (!isAuthenticated) {
+    return <div className="text-gray-600">Please connect to Google Sheets first</div>;
+  }
 
   if (loading) {
     return <div className="text-gray-600">Loading names...</div>;

@@ -18,7 +18,39 @@ class GoogleSheetsService {
     this.accessToken = token;
   }
 
-  private async createSpreadsheet(): Promise<string> {
+  async checkSpreadsheetExists(): Promise<boolean> {
+    if (!this.accessToken) {
+      throw new Error('Not authenticated with Google');
+    }
+
+    try {
+      const existingId = await this.findSpreadsheet();
+      return !!existingId;
+    } catch (error) {
+      console.error('Failed to check spreadsheet:', error);
+      return false;
+    }
+  }
+
+  private async findSpreadsheet(): Promise<string | null> {
+    if (!this.accessToken) {
+      throw new Error('Not authenticated with Google');
+    }
+
+    const response = await fetch(
+      `https://www.googleapis.com/drive/v3/files?q=name='${this.SHEET_NAME}' and mimeType='application/vnd.google-apps.spreadsheet'`,
+      {
+        headers: {
+          'Authorization': `Bearer ${this.accessToken}`,
+        },
+      }
+    );
+
+    const data = await response.json();
+    return data.files?.[0]?.id || null;
+  }
+
+  async createSpreadsheet(): Promise<string> {
     if (!this.accessToken) {
       throw new Error('Not authenticated with Google');
     }
@@ -57,49 +89,9 @@ class GoogleSheetsService {
     });
 
     const data = await response.json();
+    this.spreadsheetId = data.spreadsheetId;
+    await this.initializeSheets(data.spreadsheetId);
     return data.spreadsheetId;
-  }
-
-  private async findSpreadsheet(): Promise<string | null> {
-    if (!this.accessToken) {
-      throw new Error('Not authenticated with Google');
-    }
-
-    const response = await fetch(
-      `https://www.googleapis.com/drive/v3/files?q=name='${this.SHEET_NAME}' and mimeType='application/vnd.google-apps.spreadsheet'`,
-      {
-        headers: {
-          'Authorization': `Bearer ${this.accessToken}`,
-        },
-      }
-    );
-
-    const data = await response.json();
-    return data.files?.[0]?.id || null;
-  }
-
-  async getOrCreateSpreadsheet(): Promise<string> {
-    if (this.spreadsheetId) {
-      return this.spreadsheetId;
-    }
-
-    try {
-      const existingId = await this.findSpreadsheet();
-      if (existingId) {
-        this.spreadsheetId = existingId;
-        return existingId;
-      }
-
-      const newId = await this.createSpreadsheet();
-      this.spreadsheetId = newId;
-      
-      await this.initializeSheets(newId);
-      
-      return newId;
-    } catch (error) {
-      console.error('Failed to get or create spreadsheet:', error);
-      throw new Error('Failed to access Google Sheets');
-    }
   }
 
   private async initializeSheets(spreadsheetId: string): Promise<void> {
@@ -139,7 +131,11 @@ class GoogleSheetsService {
     }
 
     try {
-      const spreadsheetId = await this.getOrCreateSpreadsheet();
+      const spreadsheetId = await this.findSpreadsheet();
+      if (!spreadsheetId) {
+        return [];
+      }
+
       const response = await fetch(
         `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${this.NAMES_SHEET}`,
         {
@@ -170,7 +166,11 @@ class GoogleSheetsService {
     }
 
     try {
-      const spreadsheetId = await this.getOrCreateSpreadsheet();
+      const spreadsheetId = await this.findSpreadsheet();
+      if (!spreadsheetId) {
+        throw new Error('Spreadsheet not found');
+      }
+
       const formattedTimestamp = format(timestamp, 'yyyy-MM-dd HH:mm:ss');
       const forceUnits = convertForce(force);
       
