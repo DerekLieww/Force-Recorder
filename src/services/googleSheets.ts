@@ -28,7 +28,7 @@ class GoogleSheetsService {
       return !!existingId;
     } catch (error) {
       console.error('Failed to check spreadsheet:', error);
-      return false;
+      throw error;
     }
   }
 
@@ -45,6 +45,10 @@ class GoogleSheetsService {
         },
       }
     );
+
+    if (!response.ok) {
+      throw new Error('Failed to search for spreadsheet');
+    }
 
     const data = await response.json();
     return data.files?.[0]?.id || null;
@@ -88,6 +92,10 @@ class GoogleSheetsService {
       }),
     });
 
+    if (!response.ok) {
+      throw new Error('Failed to create spreadsheet');
+    }
+
     const data = await response.json();
     this.spreadsheetId = data.spreadsheetId;
     await this.initializeSheets(data.spreadsheetId);
@@ -100,7 +108,7 @@ class GoogleSheetsService {
       'Content-Type': 'application/json',
     };
 
-    // Initialize Data sheet headers with additional columns for pounds and kilograms
+    // Initialize Data sheet headers
     await fetch(
       `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Data!A1:F1?valueInputOption=RAW`,
       {
@@ -127,7 +135,7 @@ class GoogleSheetsService {
 
   async getNames(): Promise<string[]> {
     if (!this.accessToken) {
-      throw new Error('Not authenticated with Google');
+      return [];
     }
 
     try {
@@ -145,6 +153,10 @@ class GoogleSheetsService {
         }
       );
       
+      if (!response.ok) {
+        throw new Error('Failed to fetch names');
+      }
+
       const data = await response.json();
       if (!data.values || data.values.length <= 1) {
         return [];
@@ -156,7 +168,7 @@ class GoogleSheetsService {
         .filter(Boolean);
     } catch (error) {
       console.error('Failed to fetch names:', error);
-      return [];
+      throw error;
     }
   }
 
@@ -183,12 +195,7 @@ class GoogleSheetsService {
         ''  // Empty notes column
       ]];
 
-      const body = {
-        values,
-        majorDimension: 'ROWS'
-      };
-
-      await fetch(
+      const response = await fetch(
         `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${this.DATA_SHEET}:append?valueInputOption=USER_ENTERED`,
         {
           method: 'POST',
@@ -196,9 +203,16 @@ class GoogleSheetsService {
             'Authorization': `Bearer ${this.accessToken}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(body)
+          body: JSON.stringify({
+            values,
+            majorDimension: 'ROWS'
+          })
         }
       );
+
+      if (!response.ok) {
+        throw new Error('Failed to append test result');
+      }
     } catch (error) {
       console.error('Failed to append test result:', error);
       throw error;
