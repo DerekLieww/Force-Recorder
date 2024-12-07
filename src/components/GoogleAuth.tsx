@@ -7,12 +7,25 @@ import { useAuthStore } from '../store/authStore';
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
 export function GoogleAuth() {
-  const setAuthenticated = useAuthStore((state) => state.setAuthenticated);
+  const { setAuthenticated, setUserInfo } = useAuthStore();
 
   const onSuccess = (credentialResponse: any) => {
-    if (credentialResponse?.credential) {
-      googleSheetsService.setAccessToken(credentialResponse.credential);
-      setAuthenticated(true);
+    try {
+      if (credentialResponse?.credential) {
+        googleSheetsService.setAccessToken(credentialResponse.credential);
+        setAuthenticated(true);
+        
+        // You can decode the credential to get user info if needed
+        const decoded = JSON.parse(atob(credentialResponse.credential.split('.')[1]));
+        setUserInfo({
+          email: decoded.email,
+          name: decoded.name,
+          picture: decoded.picture
+        });
+      }
+    } catch (error) {
+      console.error('Failed to process Google login:', error);
+      setAuthenticated(false);
     }
   };
 
@@ -26,16 +39,16 @@ export function GoogleAuth() {
       <h2 className="text-xl font-semibold text-gray-800">
         Connect to Google Sheets
       </h2>
-      <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <GoogleOAuthProvider 
+        clientId={GOOGLE_CLIENT_ID}
+      >
         <GoogleLogin
           onSuccess={onSuccess}
           onError={onError}
-          type="standard"
-          theme="filled_blue"
-          size="large"
-          width="250"
-          cookiePolicy="single_host_origin"
-          scope="https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file"
+          useOneTap={false}
+          context="signin"
+          ux_mode="popup"
+          auto_select={false}
         />
       </GoogleOAuthProvider>
       <GoogleSheetsStatus />
