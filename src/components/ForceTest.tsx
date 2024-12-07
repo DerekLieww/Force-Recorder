@@ -3,7 +3,6 @@ import { Play, Square } from 'lucide-react';
 import { Button } from './ui/Button';
 import { useForceStore } from '../store/forceStore';
 import { googleSheetsService } from '../services/googleSheets';
-import { convertForce } from '../utils/forceConversion';
 
 const FORCE_THRESHOLD = 2; // Newtons - minimum force to consider for plateau
 const TIME_THRESHOLD = 500; // ms - time window to check for plateau
@@ -85,19 +84,10 @@ export function ForceTest() {
       </div>
 
       {plateauForce && (
-        <div className="bg-green-50 p-4 rounded-md space-y-2">
-          <h3 className="font-semibold text-green-800">Plateau Force:</h3>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="text-green-800">
-              <span className="font-bold">{plateauForce.toFixed(1)}</span> N
-            </div>
-            <div className="text-green-800">
-              <span className="font-bold">{convertForce(plateauForce).pounds.toFixed(1)}</span> lbs
-            </div>
-            <div className="text-green-800">
-              <span className="font-bold">{convertForce(plateauForce).kilograms.toFixed(1)}</span> kg
-            </div>
-          </div>
+        <div className="bg-green-50 p-4 rounded-md">
+          <p className="text-green-800">
+            Plateau Force: <span className="font-bold">{plateauForce.toFixed(1)} N</span>
+          </p>
         </div>
       )}
     </div>

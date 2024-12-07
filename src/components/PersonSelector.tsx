@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { googleSheetsService } from '../services/googleSheets';
 import { useForceStore } from '../store/forceStore';
-import { useNamesStore } from '../store/namesStore';
 import { useAuthStore } from '../store/authStore';
+import { useNamesStore } from '../store/namesStore';
 import { Button } from './ui/Button';
 import { AddNameModal } from './AddNameModal';
 
