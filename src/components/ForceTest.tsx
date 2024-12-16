@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect } from 'react';
-import { Play, Square } from 'lucide-react';
+import { Play, Square, RotateCcw } from 'lucide-react';
 import { Button } from './ui/Button';
 import { useForceStore } from '../store/forceStore';
 import { googleSheetsService } from '../services/googleSheets';
+import { bluetoothService } from '../services/bluetooth';
+import { detectPlateau } from '../utils/forceCalculation';
 
 const FORCE_THRESHOLD = 2; // Newtons - minimum force to consider for plateau
 const TIME_THRESHOLD = 500; // ms - time window to check for plateau
@@ -22,12 +24,9 @@ export function ForceTest() {
   const calculatePlateau = useCallback(() => {
     if (readings.length < 10) return;
 
-    const recentReadings = readings.slice(-10);
-    const forces = recentReadings.map(r => r.force);
-    const mean = forces.reduce((a, b) => a + b, 0) / forces.length;
-    const variance = forces.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / forces.length;
-
-    if (variance < 1 && mean > FORCE_THRESHOLD) {
+    const forces = readings.map(r => r.force);
+    if (detectPlateau(forces)) {
+      const mean = forces.slice(-10).reduce((a, b) => a + b, 0) / 10;
       setPlateauForce(mean);
       stopRecording();
       
@@ -50,27 +49,56 @@ export function ForceTest() {
     }
   }, [isRecording, calculatePlateau]);
 
-  const handleStartTest = () => {
-    clearReadings();
-    startRecording();
+  const handleStartTest = async () => {
+    try {
+      clearReadings();
+      await bluetoothService.tare(); // Zero the device
+      await bluetoothService.startSampling();
+      startRecording();
+    } catch (error) {
+      console.error('Failed to start test:', error);
+    }
   };
 
-  const handleStopTest = () => {
-    stopRecording();
+  const handleStopTest = async () => {
+    try {
+      await bluetoothService.stopSampling();
+      stopRecording();
+    } catch (error) {
+      console.error('Failed to stop test:', error);
+    }
+  };
+
+  const handleTare = async () => {
+    try {
+      await bluetoothService.tare();
+    } catch (error) {
+      console.error('Failed to tare device:', error);
+    }
   };
 
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-4">
         {!isRecording ? (
-          <Button
-            onClick={handleStartTest}
-            disabled={!selectedPerson}
-            className="flex items-center gap-2"
-          >
-            <Play className="w-4 h-4" />
-            Start Test
-          </Button>
+          <>
+            <Button
+              onClick={handleStartTest}
+              disabled={!selectedPerson}
+              className="flex items-center gap-2"
+            >
+              <Play className="w-4 h-4" />
+              Start Test
+            </Button>
+            <Button
+              onClick={handleTare}
+              variant="secondary"
+              className="flex items-center gap-2"
+            >
+              <RotateCcw className="w-4 h-4" />
+              Tare
+            </Button>
+          </>
         ) : (
           <Button
             onClick={handleStopTest}
