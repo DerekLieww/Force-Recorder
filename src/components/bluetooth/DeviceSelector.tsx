@@ -5,6 +5,7 @@ import { DeviceList } from './DeviceList';
 import { Modal } from '../ui/Modal';
 import { useBluetoothStore } from '../../store/bluetoothStore';
 import { bluetoothService } from '../../services/bluetooth';
+import { BluetoothDevice } from '../../services/bluetooth/types';
 
 export function DeviceSelector() {
   const [isScanning, setIsScanning] = useState(false);

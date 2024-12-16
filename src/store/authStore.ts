@@ -19,3 +19,4 @@ export const useAuthStore = create<AuthState>((set) => ({
   setAuthenticated: (value) => set({ isAuthenticated: value }),
   setUserInfo: (info) => set({ userInfo: info }),
 }));
+

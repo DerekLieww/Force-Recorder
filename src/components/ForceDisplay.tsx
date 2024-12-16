@@ -9,7 +9,7 @@ export function ForceDisplay() {
   const forceUnits = convertForce(currentForce);
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+    <div className="bg-white rounded-lg shadow-lg p-6 w-full">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-2xl font-bold text-gray-800">Force Reading</h2>
         {isRecording && (

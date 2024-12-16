@@ -1,27 +1,39 @@
 import React from 'react';
-import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
+import { googleLogout,GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
 import { googleSheetsService } from '../services/googleSheets';
 import { GoogleSheetsStatus } from './GoogleSheetsStatus';
 import { useAuthStore } from '../store/authStore';
+import axios from 'axios';
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''; 
 
 export function GoogleAuth() {
-  const { setAuthenticated, setUserInfo } = useAuthStore();
-
-  const onSuccess = (credentialResponse: any) => {
+  const { setAuthenticated, setUserInfo, userInfo } = useAuthStore();
+    // log out function to log the user out of google and set the profile array to null
+    const logOut = () => {
+      googleLogout();
+      setUserInfo(null);
+  };
+  const onSuccesss = (credentialResponse: any) => {
     try {
-      if (credentialResponse?.credential) {
-        googleSheetsService.setAccessToken(credentialResponse.credential);
+      console.log(credentialResponse);
+      if (credentialResponse?.access_token) {
+        console.log(credentialResponse);
+        googleSheetsService.setAccessToken(credentialResponse.access_token);
         setAuthenticated(true);
-        
-        // You can decode the credential to get user info if needed
-        const decoded = JSON.parse(atob(credentialResponse.credential.split('.')[1]));
-        setUserInfo({
-          email: decoded.email,
-          name: decoded.name,
-          picture: decoded.picture
-        });
+
+        axios
+          .get(`https://www.googleapis.com/oauth2/v1/userinfo?access_token=${credentialResponse.access_token}`, {
+              headers: {
+                  Authorization: `Bearer ${credentialResponse.access_token}`,
+                  Accept: 'application/json'
+              }
+          })
+          .then((res) => {
+              setUserInfo(res.data);
+              console.log(res.data);
+          })
+          .catch((err) => console.log(err));
       }
     } catch (error) {
       console.error('Failed to process Google login:', error);
@@ -29,11 +41,22 @@ export function GoogleAuth() {
     }
   };
 
-  const onError = () => {
+  const onErrorr = () => {
     console.error('Google Login Failed');
     setAuthenticated(false);
   };
+ 
+  const login = useGoogleLogin({
+    scope: [
+      "https://www.googleapis.com/auth/spreadsheets",
+      "https://www.googleapis.com/auth/drive.file",
+      "openid",
+      "email",
+      "profile"].join(" "),
+    onSuccess: onSuccesss,
+    onError: onErrorr,
 
+  });
   return (
     <div className="flex flex-col items-center gap-4">
       <h2 className="text-xl font-semibold text-gray-800">
@@ -42,14 +65,23 @@ export function GoogleAuth() {
       <GoogleOAuthProvider 
         clientId={GOOGLE_CLIENT_ID}
       >
-        <GoogleLogin
-          onSuccess={onSuccess}
-          onError={onError}
-          useOneTap={false}
-          context="signin"
-          ux_mode="popup"
-          auto_select={false}
-        />
+      {userInfo ? (
+                <div>
+                    <img src={userInfo.picture} alt="user image" />
+                    <h3>User Logged in</h3>
+                    <p>Name: {userInfo.name}</p>
+                    <p>Email Address: {userInfo.email}</p>
+                    <br />
+                    <br />
+                    <button onClick={logOut}>Log out</button>
+                </div>
+            ) : (
+              <button onClick={() => login()}>
+              <i className="fa-brands fa-google"></i>
+                Sign in with Google 🚀 
+            </button>
+            )}
+      
       </GoogleOAuthProvider>
       <GoogleSheetsStatus />
     </div>

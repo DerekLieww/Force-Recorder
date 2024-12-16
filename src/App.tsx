@@ -22,21 +22,22 @@ function App() {
 
         <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
           <div className="px-4 py-6 sm:px-0">
-            <div className="flex flex-col gap-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-6">
-                  <BluetoothControl />
-                  <ForceDisplay />
-                  <div className="bg-white rounded-lg shadow-lg p-6">
-                    <PersonSelector />
-                    <div className="mt-4">
-                      <ForceTest />
-                    </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Left Column */}
+              <div className="space-y-6">
+                <BluetoothControl />
+                <ForceDisplay />
+                <div className="bg-white rounded-lg shadow-lg p-6">
+                  <PersonSelector />
+                  <div className="mt-4">
+                    <ForceTest />
                   </div>
                 </div>
-                <div className="bg-white rounded-lg shadow-lg p-6">
-                  <GoogleAuth />
-                </div>
+              </div>
+              
+              {/* Right Column */}
+              <div className="bg-white rounded-lg shadow-lg p-6">
+                <GoogleAuth />
               </div>
             </div>
           </div>
