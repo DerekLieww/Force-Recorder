@@ -67,6 +67,7 @@ export function GoogleSheetsStatus() {
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-4">
+        {isAuthenticated && (
         <div className="flex items-center gap-2">
           {sheetExists ? (
             <>
@@ -80,6 +81,7 @@ export function GoogleSheetsStatus() {
             </>
           )}
         </div>
+        )}
         
         {!sheetExists && (
           <Button
