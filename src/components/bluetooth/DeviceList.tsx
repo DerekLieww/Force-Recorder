@@ -2,11 +2,6 @@ import React from 'react';
 import { Bluetooth } from 'lucide-react';
 import { Button } from '../ui/Button';
 
-interface BluetoothDevice {
-  id: string;
-  name: string;
-}
-
 interface DeviceListProps {
   devices: BluetoothDevice[];
   onSelectDevice: (deviceId: string) => void;

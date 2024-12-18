@@ -1,5 +1,4 @@
 import { TINDEQ_SERVICE_UUID } from '../../constants/bluetooth';
-import { BluetoothDevice } from './types';
 
 export class BluetoothConnection {
   private device: BluetoothDevice | null = null;
@@ -12,10 +11,7 @@ export class BluetoothConnection {
         optionalServices: [TINDEQ_SERVICE_UUID]
       });
 
-      return [{
-        id: device.id,
-        name: device.name || 'Unknown Tindeq Device'
-      }];
+      return [device];
     } catch (error) {
       console.error('Scanning failed:', error);
       return [];
@@ -52,9 +48,6 @@ export class BluetoothConnection {
   }
 
   getConnectedDevice(): BluetoothDevice | null {
-    return this.device ? {
-      id: this.device.id,
-      name: this.device.name || 'Unknown Device'
-    } : null;
+    return this.device;
   }
 }

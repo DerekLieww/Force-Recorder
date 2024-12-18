@@ -5,7 +5,6 @@ import { DeviceList } from './DeviceList';
 import { Modal } from '../ui/Modal';
 import { useBluetoothStore } from '../../store/bluetoothStore';
 import { bluetoothService } from '../../services/bluetooth';
-import { BluetoothDevice } from '../../services/bluetooth/types';
 
 export function DeviceSelector() {
   const [isScanning, setIsScanning] = useState(false);
@@ -20,10 +19,7 @@ export function DeviceSelector() {
     try {
       const device = await bluetoothService.scanForDevices();
       if (device) {
-        setDevices([{
-          id: device.id,
-          name: device.name || 'Unknown Tindeq Device'
-        }]);
+        setDevices([device]);
       }
     } catch (error) {
       console.error('Scanning failed:', error);
