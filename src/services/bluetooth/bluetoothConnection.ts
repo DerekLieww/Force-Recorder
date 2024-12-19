@@ -1,46 +1,52 @@
 import { TINDEQ_SERVICE_UUID } from '../../constants/bluetooth';
+import { DeviceNotFoundError, ConnectionError } from './errors';
 
 export class BluetoothConnection {
   private device: BluetoothDevice | null = null;
   private server: BluetoothRemoteGATTServer | null = null;
 
-  async scanForDevices(): Promise<BluetoothDevice[]> {
+  async connect(deviceId: string): Promise<BluetoothRemoteGATTServer> {
     try {
-      const device = await navigator.bluetooth.requestDevice({
-        filters: [{ namePrefix: 'Progressor' }],
-        optionalServices: [TINDEQ_SERVICE_UUID]
-      });
-
-      return [device];
-    } catch (error) {
-      console.error('Scanning failed:', error);
-      return [];
-    }
-  }
-
-  async connect(deviceId: string): Promise<BluetoothRemoteGATTServer | null> {
-    try {
+      // Get the actual device from the browser
       const devices = await navigator.bluetooth.getDevices();
-      this.device = devices.find(d => d.id === deviceId) || null;
+      const foundDevice = devices.find(d => d.id === deviceId);
       
-      if (!this.device) {
-        throw new Error('Device not found');
+      if (!foundDevice) {
+        throw new DeviceNotFoundError('Selected device not found');
       }
 
-      this.server = await this.device.gatt?.connect() || null;
-      return this.server;
+      if (!foundDevice.gatt) {
+        throw new ConnectionError('Device does not support GATT');
+      }
+
+      const server = await foundDevice.gatt.connect();
+      
+      if (!server) {
+        throw new ConnectionError('Failed to establish GATT server connection');
+      }
+
+      this.device = foundDevice;
+      this.server = server;
+
+      return server;
     } catch (error) {
-      console.error('Connection failed:', error);
-      throw error;
+      if (error instanceof DeviceNotFoundError || error instanceof ConnectionError) {
+        throw error;
+      }
+      throw new ConnectionError('Failed to connect to device', error);
     }
   }
 
   async disconnect(): Promise<void> {
-    if (this.server?.connected) {
-      this.device?.gatt?.disconnect();
+    try {
+      if (this.server?.connected) {
+        await this.server.disconnect();
+      }
+      this.server = null;
+      this.device = null;
+    } catch (error) {
+      throw new ConnectionError('Failed to disconnect from device', error);
     }
-    this.server = null;
-    this.device = null;
   }
 
   isConnected(): boolean {

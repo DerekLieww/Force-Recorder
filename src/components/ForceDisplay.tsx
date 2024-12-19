@@ -1,10 +1,12 @@
 import React from 'react';
 import { useForceStore } from '../store/forceStore';
+import { useDeviceCommandStore } from '../store/deviceCommandStore';
 import { LineChart, Timer } from 'lucide-react';
 import { convertForce } from '../utils/forceConversion';
 
 export function ForceDisplay() {
   const { readings, isRecording } = useForceStore();
+  const { currentCommand } = useDeviceCommandStore();
   const currentForce = readings[readings.length - 1]?.force ?? 0;
   const forceUnits = convertForce(currentForce);
 
@@ -12,12 +14,20 @@ export function ForceDisplay() {
     <div className="bg-white rounded-lg shadow-lg p-6 w-full">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-2xl font-bold text-gray-800">Force Reading</h2>
-        {isRecording && (
-          <div className="flex items-center gap-2">
-            <Timer className="w-5 h-5 text-red-500 animate-pulse" />
-            <span className="text-red-500">Recording</span>
-          </div>
-        )}
+        <div className="flex items-center gap-4">
+          {currentCommand === 'SAMPLING' && !isRecording && (
+            <div className="flex items-center gap-2">
+              <Timer className="w-5 h-5 text-blue-500" />
+              <span className="text-blue-500">Sampling</span>
+            </div>
+          )}
+          {isRecording && (
+            <div className="flex items-center gap-2">
+              <Timer className="w-5 h-5 text-red-500 animate-pulse" />
+              <span className="text-red-500">Recording Test</span>
+            </div>
+          )}
+        </div>
       </div>
       
       <div className="grid grid-cols-3 gap-4 py-8">

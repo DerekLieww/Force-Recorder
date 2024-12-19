@@ -5,6 +5,7 @@ import { useForceStore } from '../store/forceStore';
 import { googleSheetsService } from '../services/googleSheets';
 import { bluetoothService } from '../services/bluetooth';
 import { detectPlateau } from '../utils/forceCalculation';
+import { deviceManager } from '../services/bluetooth/deviceManager';
 
 const FORCE_THRESHOLD = 2; // Newtons - minimum force to consider for plateau
 const TIME_THRESHOLD = 500; // ms - time window to check for plateau
@@ -53,7 +54,7 @@ export function ForceTest() {
     try {
       clearReadings();
       await bluetoothService.tare(); // Zero the device
-      await bluetoothService.startSampling();
+      await deviceManager.startTest(); // This will handle sampling if needed
       startRecording();
     } catch (error) {
       console.error('Failed to start test:', error);
@@ -62,7 +63,7 @@ export function ForceTest() {
 
   const handleStopTest = async () => {
     try {
-      await bluetoothService.stopSampling();
+      await deviceManager.stopTest();
       stopRecording();
     } catch (error) {
       console.error('Failed to stop test:', error);
