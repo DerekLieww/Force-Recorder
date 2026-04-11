@@ -1,6 +1,6 @@
-import { BluetoothConnection } from './bluetoothConnection';
-import { ForceReader } from './forceReader';
-import { ForceReading } from './types';
+import { BluetoothConnection } from './connection';
+import { ForceReader } from './force-reader';
+import type { ForceReading } from './types';
 import { useForceStore } from '../../store/forceStore';
 
 class BluetoothService {
@@ -25,12 +25,10 @@ class BluetoothService {
 
       await this.forceReader.initialize(server);
       
-      // Set up continuous force reading callback
       this.forceReader.setForceUpdateCallback((reading: ForceReading) => {
         useForceStore.getState().addReading(reading);
       });
 
-      // Start sampling immediately after connection
       await this.forceReader.startSampling();
     } catch (error) {
       console.error('Device connection failed:', error);
@@ -40,8 +38,7 @@ class BluetoothService {
 
   async disconnect(): Promise<void> {
     try {
-      await this.forceReader.stopSampling();
-      await this.forceReader.cleanup();
+      await this.forceReader.disconnect();
       await this.connection.disconnect();
     } catch (error) {
       console.error('Disconnection failed:', error);

@@ -1,26 +1,25 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Search, X } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { DeviceList } from './DeviceList';
 import { Modal } from '../ui/Modal';
 import { useBluetoothStore } from '../../store/bluetoothStore';
-import { bluetoothService } from '../../services/bluetooth';
+import { bluetoothService } from '../../services/bluetooth/index';
 
 export function DeviceSelector() {
   const [isScanning, setIsScanning] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [devices, setDevices] = useState<BluetoothDevice[]>([]);
+
   const { isConnected, setConnected, setConnecting } = useBluetoothStore();
 
   const handleScan = async () => {
     setIsScanning(true);
     setDevices([]);
-    
+
     try {
-      const device = await bluetoothService.scanForDevices();
-      if (device) {
-        setDevices([device]);
-      }
+      const found = await bluetoothService.scanForDevices();
+      setDevices(found);
     } catch (error) {
       console.error('Scanning failed:', error);
     } finally {
@@ -84,7 +83,7 @@ export function DeviceSelector() {
           >
             {isScanning ? 'Scanning...' : 'Scan for Devices'}
           </Button>
-          
+
           <DeviceList
             devices={devices}
             onSelectDevice={handleSelectDevice}

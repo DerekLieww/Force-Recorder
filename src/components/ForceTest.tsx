@@ -1,71 +1,39 @@
-import React, { useCallback, useEffect } from 'react';
-import { Play, Square, RotateCcw } from 'lucide-react';
-import { Button } from './ui/Button';
+import { useState } from 'react';
+import { Save, RotateCcw, Check } from 'lucide-react';
 import { useForceStore } from '../store/forceStore';
+import { useHistoryStore } from '../store/historyStore';
 import { googleSheetsService } from '../services/googleSheets';
-import { bluetoothService } from '../services/bluetooth';
-import { detectPlateau } from '../utils/forceCalculation';
-
-const FORCE_THRESHOLD = 2; // Newtons - minimum force to consider for plateau
-const TIME_THRESHOLD = 500; // ms - time window to check for plateau
+import { bluetoothService } from '../services/bluetooth/index';
 
 export function ForceTest() {
-  const {
-    readings,
-    isRecording,
-    selectedPerson,
-    plateauForce,
-    startRecording,
-    stopRecording,
-    clearReadings,
-    setPlateauForce,
-  } = useForceStore();
+  const [saved, setSaved] = useState(false);
 
-  const calculatePlateau = useCallback(() => {
-    if (readings.length < 10) return;
+  const { highestForce, selectedPerson, resetHighestForce } = useForceStore();
+  const { setHistory, setLoadingHistory, clearHistory } = useHistoryStore();
 
-    const forces = readings.map(r => r.force);
-    if (detectPlateau(forces)) {
-      const mean = forces.slice(-10).reduce((a, b) => a + b, 0) / 10;
-      setPlateauForce(mean);
-      stopRecording();
-      
-      // Save to Google Sheets
-      if (selectedPerson) {
-        googleSheetsService.appendTestResult(
-          selectedPerson,
-          mean,
-          Date.now()
-        ).catch(error => {
-          console.error('Failed to save test result:', error);
-        });
-      }
-    }
-  }, [readings, selectedPerson, setPlateauForce, stopRecording]);
-
-  useEffect(() => {
-    if (isRecording) {
-      calculatePlateau();
-    }
-  }, [isRecording, calculatePlateau]);
-
-  const handleStartTest = async () => {
+  const refreshHistory = async (name: string) => {
+    setLoadingHistory(true);
+    clearHistory();
     try {
-      clearReadings();
-      await bluetoothService.tare(); // Zero the device
-      await bluetoothService.startSampling();
-      startRecording();
+      const entries = await googleSheetsService.getHistoryForPerson(name);
+      setHistory(entries);
     } catch (error) {
-      console.error('Failed to start test:', error);
+      console.error('Failed to refresh history:', error);
+    } finally {
+      setLoadingHistory(false);
     }
   };
 
-  const handleStopTest = async () => {
+  const handleRecord = async () => {
+    if (!selectedPerson || highestForce === 0) return;
     try {
-      await bluetoothService.stopSampling();
-      stopRecording();
+      await googleSheetsService.appendTestResult(selectedPerson, highestForce, Date.now());
+      resetHighestForce();
+      setSaved(true);
+      await refreshHistory(selectedPerson);
+      setTimeout(() => setSaved(false), 2000);
     } catch (error) {
-      console.error('Failed to stop test:', error);
+      console.error('Failed to record test:', error);
     }
   };
 
@@ -77,47 +45,42 @@ export function ForceTest() {
     }
   };
 
+  const handleReset = () => {
+    resetHighestForce();
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-4">
-        {!isRecording ? (
-          <>
-            <Button
-              onClick={handleStartTest}
-              disabled={!selectedPerson}
-              className="flex items-center gap-2"
-            >
-              <Play className="w-4 h-4" />
-              Start Test
-            </Button>
-            <Button
-              onClick={handleTare}
-              variant="secondary"
-              className="flex items-center gap-2"
-            >
-              <RotateCcw className="w-4 h-4" />
-              Tare
-            </Button>
-          </>
-        ) : (
-          <Button
-            onClick={handleStopTest}
-            variant="secondary"
-            className="flex items-center gap-2"
-          >
-            <Square className="w-4 h-4" />
-            Stop Test
-          </Button>
-        )}
-      </div>
+        <button
+          onClick={handleRecord}
+          disabled={!selectedPerson || highestForce === 0 || saved}
+          className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium text-base transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+            saved
+              ? 'bg-green-600 text-white focus:ring-green-500'
+              : 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500'
+          }`}
+        >
+          {saved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+          {saved ? 'Saved!' : 'Record'}
+        </button>
 
-      {plateauForce && (
-        <div className="bg-green-50 p-4 rounded-md">
-          <p className="text-green-800">
-            Plateau Force: <span className="font-bold">{plateauForce.toFixed(1)} N</span>
-          </p>
-        </div>
-      )}
+        <button
+          onClick={handleReset}
+          className="flex items-center gap-2 px-4 py-2 rounded-md font-medium text-base bg-gray-200 text-gray-900 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+        >
+          <RotateCcw className="w-4 h-4" />
+          Reset Peak
+        </button>
+
+        <button
+          onClick={handleTare}
+          className="flex items-center gap-2 px-4 py-2 rounded-md font-medium text-base bg-gray-200 text-gray-900 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+        >
+          <RotateCcw className="w-4 h-4" />
+          Tare
+        </button>
+      </div>
     </div>
   );
 }

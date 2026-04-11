@@ -1,3 +1,4 @@
+import type { HistoryEntry } from '../store/historyStore';
 import { format } from 'date-fns';
 import { convertForce } from '../utils/forceConversion';
 
@@ -58,6 +59,12 @@ class GoogleSheetsService {
     );
 
     return data.files?.[0]?.id || null;
+  }
+
+  private async getSpreadsheetId(): Promise<string | null> {
+    if (this.spreadsheetId) return this.spreadsheetId;
+    this.spreadsheetId = await this.findSpreadsheet();
+    return this.spreadsheetId;
   }
 
   async checkSpreadsheetExists(): Promise<boolean> {
@@ -146,7 +153,7 @@ class GoogleSheetsService {
 
   async getNames(): Promise<string[]> {
     try {
-      const spreadsheetId = await this.findSpreadsheet();
+      const spreadsheetId = await this.getSpreadsheetId();
       if (!spreadsheetId) {
         return [];
       }
@@ -171,14 +178,14 @@ class GoogleSheetsService {
 
   async appendTestResult(name: string, force: number, timestamp: number): Promise<void> {
     try {
-      const spreadsheetId = await this.findSpreadsheet();
+      const spreadsheetId = await this.getSpreadsheetId();
       if (!spreadsheetId) {
         throw new Error('Spreadsheet not found');
       }
 
       const formattedTimestamp = format(timestamp, 'yyyy-MM-dd HH:mm:ss');
       const forceUnits = convertForce(force);
-      
+
       const values = [[
         formattedTimestamp,
         name,
@@ -201,6 +208,34 @@ class GoogleSheetsService {
     } catch (error) {
       console.error('Failed to append test result:', error);
       throw error;
+    }
+  }
+
+  async getHistoryForPerson(name: string): Promise<HistoryEntry[]> {
+    try {
+      const spreadsheetId = await this.getSpreadsheetId();
+      if (!spreadsheetId) return [];
+
+      const data = await this.makeRequest(
+        `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Data!A:F`
+      );
+
+      if (!data.values || data.values.length <= 1) return [];
+
+      return data.values
+        .slice(1)
+        .filter((row: string[]) => row[1] === name)
+        .map((row: string[]) => ({
+          timestamp: row[0],
+          forceLbs: parseFloat(row[3]) || 0,
+          forceKg: parseFloat(row[4]) || 0,
+        }))
+        .sort((a: HistoryEntry, b: HistoryEntry) =>
+          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+        );
+    } catch (error) {
+      console.error('Failed to fetch history:', error);
+      return [];
     }
   }
 }

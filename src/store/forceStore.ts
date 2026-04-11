@@ -1,31 +1,26 @@
 import { create } from 'zustand';
-import { TindeqReading } from '../services/bluetooth';
+import type { ForceReading } from '../services/bluetooth/types';
 
 interface ForceState {
-  readings: TindeqReading[];
+  readings: ForceReading[];
   isRecording: boolean;
   selectedPerson: string | null;
-  plateauForce: number | null;
-  addReading: (reading: TindeqReading) => void;
-  startRecording: () => void;
-  stopRecording: () => void;
-  clearReadings: () => void;
+  highestForce: number;
+  addReading: (reading: ForceReading) => void;
+  resetHighestForce: () => void;
   setSelectedPerson: (name: string) => void;
-  setPlateauForce: (force: number) => void;
 }
 
 export const useForceStore = create<ForceState>((set) => ({
   readings: [],
   isRecording: false,
   selectedPerson: null,
-  plateauForce: null,
+  highestForce: 0,
   addReading: (reading) =>
     set((state) => ({
-      readings: state.isRecording ? [...state.readings, reading] : state.readings,
+      readings: [...state.readings, reading],
+      highestForce: Math.max(state.highestForce, reading.force),
     })),
-  startRecording: () => set({ isRecording: true, plateauForce: null }),
-  stopRecording: () => set({ isRecording: false }),
-  clearReadings: () => set({ readings: [], plateauForce: null }),
+  resetHighestForce: () => set({ highestForce: 0 }),
   setSelectedPerson: (name) => set({ selectedPerson: name }),
-  setPlateauForce: (force) => set({ plateauForce: force }),
 }));

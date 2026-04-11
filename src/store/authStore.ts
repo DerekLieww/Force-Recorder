@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-interface UserInfo {
+export interface UserInfo {
   email: string;
   name: string;
   picture: string;
@@ -19,4 +19,3 @@ export const useAuthStore = create<AuthState>((set) => ({
   setAuthenticated: (value) => set({ isAuthenticated: value }),
   setUserInfo: (info) => set({ userInfo: info }),
 }));
-

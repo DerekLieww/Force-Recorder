@@ -22,7 +22,7 @@ export function GoogleSheetsStatus() {
 
   const checkSheetStatus = async () => {
     if (!isAuthenticated) return;
-    
+
     try {
       setIsChecking(true);
       setError(null);
@@ -57,7 +57,7 @@ export function GoogleSheetsStatus() {
 
   if (isChecking) {
     return (
-      <div className="flex items-center gap-2 text-gray-500">
+      <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
         <Loader2 className="w-5 h-5 animate-spin" />
         <span>Checking sheet status...</span>
       </div>
@@ -68,21 +68,21 @@ export function GoogleSheetsStatus() {
     <div className="space-y-2">
       <div className="flex items-center gap-4">
         {isAuthenticated && (
-        <div className="flex items-center gap-2">
-          {sheetExists ? (
-            <>
-              <CheckCircle className="w-5 h-5 text-green-500" />
-              <span className="text-green-700">Sheet connected</span>
-            </>
-          ) : (
-            <>
-              <XCircle className="w-5 h-5 text-red-500" />
-              <span className="text-red-700">Sheet not found</span>
-            </>
-          )}
-        </div>
+          <div className="flex items-center gap-2">
+            {sheetExists ? (
+              <>
+                <CheckCircle className="w-5 h-5 text-green-500" />
+                <span className="text-green-700 dark:text-green-400">Sheet connected</span>
+              </>
+            ) : (
+              <>
+                <XCircle className="w-5 h-5 text-red-500" />
+                <span className="text-red-700 dark:text-red-400">Sheet not found</span>
+              </>
+            )}
+          </div>
         )}
-        
+
         {!sheetExists && (
           <Button
             onClick={handleCreateSheet}
@@ -101,11 +101,11 @@ export function GoogleSheetsStatus() {
       </div>
 
       {error && (
-        <div className="text-red-600 text-sm">
+        <div className="text-red-600 dark:text-red-400 text-sm">
           {error}
           <button
             onClick={checkSheetStatus}
-            className="ml-2 text-red-700 underline hover:no-underline"
+            className="ml-2 text-red-700 dark:text-red-400 underline hover:no-underline"
           >
             Retry
           </button>

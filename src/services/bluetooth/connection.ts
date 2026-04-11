@@ -10,7 +10,6 @@ export class BluetoothConnection {
         filters: [{ namePrefix: 'Progressor' }],
         optionalServices: [TINDEQ_SERVICE_UUID]
       });
-
       return [device];
     } catch (error) {
       console.error('Scanning failed:', error);

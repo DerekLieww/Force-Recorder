@@ -7,4 +7,5 @@ export const COMMAND = {
   START_SAMPLING: new Uint8Array([0x65]),
   STOP_SAMPLING: new Uint8Array([0x66]),
   TARE: new Uint8Array([0x64]),
+  DISCONNECT: new Uint8Array([0x6E]),
 };
