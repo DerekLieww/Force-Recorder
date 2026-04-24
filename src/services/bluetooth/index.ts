@@ -1,70 +1,11 @@
-import { BluetoothConnection } from './connection';
-import { ForceReader } from './force-reader';
-import type { ForceReading } from './types';
-import { useForceStore } from '../../store/forceStore';
+import { DeviceManager } from './deviceManager';
 
-class BluetoothService {
-  private connection: BluetoothConnection;
-  private forceReader: ForceReader;
+// Create a single instance of the DeviceManager
+const deviceManager = new DeviceManager();
 
-  constructor() {
-    this.connection = new BluetoothConnection();
-    this.forceReader = new ForceReader();
-  }
+// Export the instance as bluetoothService
+export const bluetoothService = deviceManager;
 
-  async scanForDevices() {
-    return this.connection.scanForDevices();
-  }
-
-  async connectToDevice(deviceId: string): Promise<void> {
-    try {
-      const server = await this.connection.connect(deviceId);
-      if (!server) {
-        throw new Error('Failed to establish GATT server connection');
-      }
-
-      await this.forceReader.initialize(server);
-      
-      this.forceReader.setForceUpdateCallback((reading: ForceReading) => {
-        useForceStore.getState().addReading(reading);
-      });
-
-      await this.forceReader.startSampling();
-    } catch (error) {
-      console.error('Device connection failed:', error);
-      throw error;
-    }
-  }
-
-  async disconnect(): Promise<void> {
-    try {
-      await this.forceReader.disconnect();
-      await this.connection.disconnect();
-    } catch (error) {
-      console.error('Disconnection failed:', error);
-      throw error;
-    }
-  }
-
-  async tare(): Promise<void> {
-    return this.forceReader.tare();
-  }
-
-  async startSampling(): Promise<void> {
-    return this.forceReader.startSampling();
-  }
-
-  async stopSampling(): Promise<void> {
-    return this.forceReader.stopSampling();
-  }
-
-  isConnected(): boolean {
-    return this.connection.isConnected();
-  }
-
-  getConnectedDevice() {
-    return this.connection.getConnectedDevice();
-  }
-}
-
-export const bluetoothService = new BluetoothService();
+// Export types
+export type { BluetoothDevice, ForceReading, DeviceCommand } from './types';
+export { DeviceNotFoundError, ConnectionError } from './errors';

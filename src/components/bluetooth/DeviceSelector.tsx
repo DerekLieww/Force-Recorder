@@ -1,17 +1,28 @@
-import { useState } from 'react';
-import { Search, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Search, X, Loader2 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { DeviceList } from './DeviceList';
 import { Modal } from '../ui/Modal';
 import { useBluetoothStore } from '../../store/bluetoothStore';
 import { bluetoothService } from '../../services/bluetooth/index';
 
-export function DeviceSelector() {
+interface DeviceSelectorProps {
+  onError: (error: unknown) => void;
+}
+
+export function DeviceSelector({ onError }: DeviceSelectorProps) {
   const [isScanning, setIsScanning] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [devices, setDevices] = useState<BluetoothDevice[]>([]);
 
   const { isConnected, setConnected, setConnecting } = useBluetoothStore();
+
+  useEffect(() => {
+    if (showModal) {
+      const scannedDevices = bluetoothService.getScannedDevices();
+      setDevices(scannedDevices);
+    }
+  }, [showModal]);
 
   const handleScan = async () => {
     setIsScanning(true);
@@ -21,7 +32,8 @@ export function DeviceSelector() {
       const found = await bluetoothService.scanForDevices();
       setDevices(found);
     } catch (error) {
-      console.error('Scanning failed:', error);
+      onError(error);
+      setDevices([]);
     } finally {
       setIsScanning(false);
     }
@@ -34,7 +46,8 @@ export function DeviceSelector() {
       setConnected(true);
       setShowModal(false);
     } catch (error) {
-      console.error('Connection failed:', error);
+      onError(error);
+      setConnected(false);
     } finally {
       setConnecting(false);
     }
@@ -44,8 +57,9 @@ export function DeviceSelector() {
     try {
       await bluetoothService.disconnect();
       setConnected(false);
+      setDevices([]);
     } catch (error) {
-      console.error('Disconnection failed:', error);
+      onError(error);
     }
   };
 
@@ -79,9 +93,19 @@ export function DeviceSelector() {
           <Button
             onClick={handleScan}
             disabled={isScanning}
-            className="w-full"
+            className="w-full flex items-center justify-center gap-2"
           >
-            {isScanning ? 'Scanning...' : 'Scan for Devices'}
+            {isScanning ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Scanning...
+              </>
+            ) : (
+              <>
+                <Search className="w-4 h-4" />
+                Scan for Devices
+              </>
+            )}
           </Button>
 
           <DeviceList

@@ -9,7 +9,6 @@ export function ForceDisplay() {
     highestForce: state.highestForce
   }));
 
-  // Get the latest force reading
   const currentForce = readings.length > 0 ? readings[readings.length - 1].force : 0;
   const currentForceUnits = convertForce(currentForce);
   const highestForceUnits = convertForce(highestForce);
