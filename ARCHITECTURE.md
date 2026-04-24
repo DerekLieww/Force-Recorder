@@ -456,31 +456,28 @@ classDiagram
 ```mermaid
 classDiagram
     class GoogleSheetsService {
-        -accessToken: string | null
-        -spreadsheetId: string | null
+        -accessToken: String
+        -spreadsheetId: String
         +setAccessToken(token) void
         +checkSpreadsheetExists() boolean
         +createSpreadsheet() void
-        +getNames() string[]
+        +getNames() String[]
         +appendTestResult(name, force, ts) void
         +getHistoryForPerson(name) HistoryEntry[]
-        -findSpreadsheet() string | null
-        -getSpreadsheetId() string | null
+        -findSpreadsheet() String
+        -getSpreadsheetId() String
     }
-
     class GoogleSheetsAPI {
         <<external>>
-        +POST /spreadsheets
-        +GET /spreadsheets/{id}/values/{range}
-        +PUT /spreadsheets/{id}/values/{range}
-        +POST /spreadsheets/{id}/values/{range}:append
+        +POST_spreadsheets()
+        +GET_spreadsheets_values(id, range)
+        +PUT_spreadsheets_values(id, range)
+        +POST_spreadsheets_values_append(id, range)
     }
-
     class GoogleDriveAPI {
         <<external>>
-        +GET /drive/v3/files?q=...
+        +GET_files(query)
     }
-
     GoogleSheetsService --> GoogleSheetsAPI : Bearer token
     GoogleSheetsService --> GoogleDriveAPI : Bearer token
 ```
@@ -810,15 +807,15 @@ Each component subscribes to the **minimum slice** of state needed via Zustand s
 
 ```mermaid
 graph LR
-    subgraph ForceStore["forceStore (updates @100Hz)"]
+    subgraph ForceStore["forceStore — updates at 100Hz"]
         readings
         isRecording
         selectedPerson
         highestForce
     end
 
-    ForceDisplay -->|"{ readings, highestForce, isRecording }"| ForceStore
-    ForceTest -->|"{ highestForce, selectedPerson, isRecording }"| ForceStore
+    ForceDisplay -->|"readings, highestForce, isRecording"| ForceStore
+    ForceTest -->|"highestForce, selectedPerson, isRecording"| ForceStore
     HistoryChart -->|"selectedPerson"| ForceStore
     PersonSelector -->|"selectedPerson"| ForceStore
 ```
