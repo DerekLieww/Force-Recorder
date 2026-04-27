@@ -16,6 +16,7 @@ A web application for logging and tracking force measurements from Tindeq Progre
 - Google Sheets integration for data logging
 - Multi-user support with profile management
 - Test history with chart visualization
+- PIMA training routines with live force graph and orange/green rep-state feedback
 - Dark mode support
 
 ## Technology Stack
@@ -37,6 +38,8 @@ A web application for logging and tracking force measurements from Tindeq Progre
 
 4. **View History** — Past test results are charted per person in the history view
 
+5. **Training** — Switch to the Training tab, select a PIMA routine, enter your MVC in lbs or kg, and click Start Session. The container turns orange when you hit the target force and green when the rep duration completes.
+
 ## Project Structure
 
 ```
@@ -44,7 +47,9 @@ src/
 ├── components/
 │   ├── bluetooth/          # DeviceSelector, DeviceList
 │   ├── ui/                 # Button, Modal
-│   ├── App.tsx             # Top-level layout
+│   ├── training/           # HandIndicator, RoutineSelector, SessionControls,
+│   │                       # SessionProgress, TrainingGraph
+│   ├── App.tsx             # Top-level layout + tab bar
 │   ├── BluetoothControl.tsx
 │   ├── BluetoothStatus.tsx
 │   ├── DarkModeToggle.tsx
@@ -54,6 +59,7 @@ src/
 │   ├── GoogleSheetsStatus.tsx
 │   ├── HistoryChart.tsx
 │   ├── PersonSelector.tsx
+│   ├── TrainingTab.tsx     # Color-state container + two-column layout
 │   └── UserProfile.tsx
 ├── services/
 │   ├── bluetooth/          # connection.ts, force-reader.ts, parser.ts, index.ts
@@ -63,13 +69,15 @@ src/
 │   ├── bluetoothStore.ts   # BLE connection state
 │   ├── forceStore.ts       # Active readings, recording state
 │   ├── historyStore.ts     # Past test results
-│   └── namesStore.ts       # Profile/person management
+│   ├── namesStore.ts       # Profile/person management
+│   └── trainingStore.ts    # Training session state machine
 ├── hooks/
 │   └── useTheme.ts
 ├── utils/
 │   └── forceConversion.ts  # N / lbs / kg conversions
 └── constants/
-    └── bluetooth.ts        # BLE UUIDs and command bytes
+    ├── bluetooth.ts        # BLE UUIDs and command bytes
+    └── training.ts         # PIMA routine configs and types
 ```
 
 ## Environment

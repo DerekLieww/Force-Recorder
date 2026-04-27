@@ -1,7 +1,7 @@
 # Force Recorder — Architecture Design Document
 
-**Version:** 1.0  
-**Date:** 2026-04-22  
+**Version:** 1.1  
+**Date:** 2026-04-27  
 **Author:** Derek Liew
 
 ---
@@ -45,6 +45,7 @@ Force Recorder is a browser-based single-page application for recording and trac
 - Google OAuth authentication gating persistence
 - Unit conversion (Newtons / lbs / kg)
 - Dark mode, offline-compatible UI
+- Guided PIMA training sessions with live force graphing and orange/green rep-state feedback
 
 **Design principles:**
 
@@ -90,6 +91,7 @@ graph TB
             ForceStore["forceStore"]
             HistoryStore["historyStore"]
             NamesStore["namesStore"]
+            TrainingStore["trainingStore"]
         end
 
         subgraph Services["Service Layer"]
@@ -137,10 +139,14 @@ graph TD
     App["App<br/>(GoogleOAuthProvider wrapper)"]
 
     App --> Header["header<br/>(title + DarkModeToggle)"]
-    App --> Main["main<br/>(2-column grid)"]
+    App --> TabBar["tab bar<br/>(Force Test / Training)"]
+    App --> Main["main"]
 
-    Main --> Left["Left Column"]
-    Main --> Right["Right Column"]
+    Main --> ForceTestTab["Force Test tab"]
+    Main --> TrainingTabComp["TrainingTab"]
+
+    ForceTestTab --> Left["Left Column"]
+    ForceTestTab --> Right["Right Column"]
 
     Left --> BTControl["BluetoothControl"]
     Left --> ForceDisplay["ForceDisplay<br/>(live readout)"]
@@ -159,6 +165,12 @@ graph TD
     Div2 --> HistoryChart["HistoryChart<br/>(Recharts LineChart)"]
     GoogleAuth --> UserProfile["UserProfile<br/>(avatar + logout)"]
     GoogleAuth --> SheetsStatus["GoogleSheetsStatus<br/>(create / verify sheet)"]
+
+    TrainingTabComp --> RoutineSelector["RoutineSelector<br/>(routine cards + MVC input)"]
+    TrainingTabComp --> HandIndicator["HandIndicator<br/>(SVG left/right hands)"]
+    TrainingTabComp --> TrainingGraph["TrainingGraph<br/>(Recharts AreaChart)"]
+    TrainingTabComp --> SessionProgress["SessionProgress<br/>(set/rep/rest countdown)"]
+    TrainingTabComp --> SessionControls["SessionControls<br/>(Start / Stop)"]
 ```
 
 ### 4.2 Component Responsibilities
@@ -237,7 +249,7 @@ classDiagram
 
 ## 5. State Management
 
-Five independent Zustand stores. Each component subscribes only to the slice it needs, preventing unnecessary re-renders.
+Six independent Zustand stores. Each component subscribes only to the slice it needs, preventing unnecessary re-renders.
 
 ```mermaid
 graph LR
@@ -247,6 +259,7 @@ graph LR
         ForceStore["forceStore<br/>─────────<br/>readings: ForceReading[]<br/>isRecording: bool<br/>selectedPerson: string | null<br/>highestForce: number"]
         HistoryStore["historyStore<br/>─────────<br/>history: HistoryEntry[]<br/>isLoadingHistory: bool"]
         NamesStore["namesStore<br/>─────────<br/>localNames: string[]"]
+        TrainingStore["trainingStore<br/>─────────<br/>routine: RoutineId | null<br/>mvc: number (lbs)<br/>phase: idle|rep|rest|complete<br/>colorState: neutral|orange|green<br/>activeHand: left|right<br/>currentRep/Set: number<br/>repGraphData: RepDataPoint[]"]
     end
 
     subgraph Writers["State Writers"]
@@ -275,9 +288,10 @@ graph LR
 |-------|-----------|---------|-------------|
 | `authStore` | GoogleAuth | PersonSelector, SheetsStatus, ForceTest | None (session) |
 | `bluetoothStore` | DeviceSelector | BluetoothStatus, DeviceSelector | None (session) |
-| `forceStore` | BluetoothService, ForceTest, PersonSelector | ForceDisplay, ForceTest, HistoryChart | None (session) |
+| `forceStore` | BluetoothService, ForceTest, PersonSelector | ForceDisplay, ForceTest, HistoryChart, trainingStore subscriber | None (session) |
 | `historyStore` | GoogleSheetsService | HistoryChart | Remote (Sheets) |
 | `namesStore` | GoogleSheetsService | PersonSelector | Remote (Sheets) |
+| `trainingStore` | trainingStore subscriber (forceStore), SessionControls, RoutineSelector | TrainingTab, TrainingGraph, SessionProgress, HandIndicator, SessionControls | None (session) |
 
 ---
 
