@@ -12,7 +12,7 @@ export interface RepDataPoint {
 
 interface TrainingState {
   routine: RoutineId | null;
-  mvc: number;             // always in lbs internally
+  mvc: number;             // always in lbs internally; UI components convert for display using mvcUnit
   mvcUnit: MvcUnit;
   phase: TrainingPhase;
   colorState: ColorState;
@@ -60,6 +60,7 @@ export const useTrainingStore = create<TrainingState>((set, get) => ({
 
   setMvc: (value, unit) => set({ mvc: toLbs(value, unit), mvcUnit: unit }),
 
+  // mvcUnit is display-only; mvc stays in lbs. UI must convert mvc for display.
   setMvcUnit: (unit) => set({ mvcUnit: unit }),
 
   startSession: () => {
@@ -82,13 +83,12 @@ export const useTrainingStore = create<TrainingState>((set, get) => ({
 
   onForceUpdate: (forceNewtons) => {
     const state = get();
-    if (state.phase !== 'rep' || !state.routine || state.mvc <= 0) return;
+    if (state.phase !== 'rep' || state.colorState === 'green' || !state.routine || state.mvc <= 0) return;
 
     const config = ROUTINES[state.routine];
-    const forceLbs = convertForce(forceNewtons).pounds;
-    const forceInUnit = state.mvcUnit === 'kg'
-      ? convertForce(forceNewtons).kilograms
-      : forceLbs;
+    const converted = convertForce(forceNewtons);
+    const forceLbs = converted.pounds;
+    const forceInUnit = state.mvcUnit === 'kg' ? converted.kilograms : forceLbs;
     const targetLbs = state.mvc * config.intensityMin;
     const now = Date.now();
 
@@ -109,7 +109,7 @@ export const useTrainingStore = create<TrainingState>((set, get) => ({
         const elapsed = (now - state.repStartTime) / 1000;
         if (elapsed >= config.repDuration) {
           set({ colorState: 'green', repGraphData: newData });
-          get().completeRep();
+          setTimeout(() => get().completeRep(), 600);
         } else {
           set({ colorState: 'orange', repGraphData: newData });
         }
@@ -126,6 +126,7 @@ export const useTrainingStore = create<TrainingState>((set, get) => ({
   completeRep: () => {
     const state = get();
     if (!state.routine) return;
+    if (state.phase !== 'rep') return;
     const config = ROUTINES[state.routine];
 
     if (config.hasHands) {
