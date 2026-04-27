@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { convertForce } from '../utils/forceConversion';
 import { ROUTINES, type RoutineId, type MvcUnit } from '../constants/training';
+import { useForceStore } from './forceStore';
 
 export type TrainingPhase = 'idle' | 'rep' | 'rest' | 'complete';
 export type ColorState = 'neutral' | 'orange' | 'green';
@@ -231,3 +232,14 @@ export const useTrainingStore = create<TrainingState>((set, get) => ({
     repGraphData: [],
   }),
 }));
+
+// Track last processed reading count to avoid re-processing on unrelated state changes
+let _lastReadingCount = 0;
+
+useForceStore.subscribe((state) => {
+  if (state.readings.length > _lastReadingCount) {
+    _lastReadingCount = state.readings.length;
+    const latest = state.readings[state.readings.length - 1];
+    useTrainingStore.getState().onForceUpdate(latest.force);
+  }
+});
