@@ -27,14 +27,19 @@ export function SessionControls() {
 
   if (phase === 'idle' || phase === 'complete') {
     return (
-      <button
-        onClick={() => { setConfirmStop(false); startSession(); }}
-        disabled={!canStart}
-        className="flex items-center gap-2 px-4 py-2 rounded-md font-semibold text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-40 disabled:cursor-not-allowed bg-blue-600 hover:bg-blue-700 text-white"
-      >
-        <Play className="w-4 h-4" />
-        {phase === 'complete' ? 'Restart' : 'Start Session'}
-      </button>
+      <div className="flex flex-col gap-1">
+        <button
+          onClick={() => { setConfirmStop(false); startSession(); }}
+          disabled={!canStart}
+          className="flex items-center gap-2 px-4 py-2 rounded-md font-semibold text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-gray-700 dark:disabled:text-gray-500 disabled:cursor-not-allowed bg-blue-600 hover:bg-blue-700 text-white"
+        >
+          <Play className="w-4 h-4" />
+          {phase === 'complete' ? 'Restart' : 'Start Session'}
+        </button>
+        {!canStart && mvc === 0 && (
+          <p className="text-xs text-gray-400 dark:text-gray-500">Enter your max MVC above to start</p>
+        )}
+      </div>
     );
   }
 

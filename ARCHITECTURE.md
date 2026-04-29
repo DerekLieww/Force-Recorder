@@ -79,19 +79,19 @@ Force Recorder is a browser-based single-page application for recording and trac
 
 ```mermaid
 graph TB
-    subgraph Browser["Browser (Chrome / Edge)"]
+    subgraph Browser["Browser — Chrome / Edge"]
         subgraph UI["Presentation Layer"]
-            App["App.tsx"]
-            Components["React Components"]
+            App("App.tsx")
+            Components("React Components")
         end
 
-        subgraph State["State Layer (Zustand)"]
-            AuthStore["authStore"]
-            BTStore["bluetoothStore"]
-            ForceStore["forceStore"]
-            HistoryStore["historyStore"]
-            NamesStore["namesStore"]
-            TrainingStore["trainingStore"]
+        subgraph State["State Layer — Zustand"]
+            AuthStore[("authStore")]
+            BTStore[("bluetoothStore")]
+            ForceStore[("forceStore")]
+            HistoryStore[("historyStore")]
+            NamesStore[("namesStore")]
+            TrainingStore[("trainingStore")]
         end
 
         subgraph Services["Service Layer"]
@@ -102,19 +102,19 @@ graph TB
         subgraph Utils["Utilities"]
             Parser["BLE Parser"]
             Converter["Force Converter"]
-            Theme["useTheme Hook"]
+            Theme["useTheme"]
         end
     end
 
     subgraph External["External Systems"]
-        Progressor["Tindeq Progressor<br/>(BLE Device)"]
-        GoogleAuth["Google OAuth 2.0"]
-        GoogleSheets["Google Sheets REST API"]
-        GoogleDrive["Google Drive REST API"]
+        Progressor(["Tindeq Progressor · BLE"])
+        GoogleAuth(["Google OAuth 2.0"])
+        GoogleSheets(["Google Sheets REST API"])
+        GoogleDrive(["Google Drive REST API"])
     end
 
     subgraph Storage["Browser Storage"]
-        LocalStorage["localStorage<br/>(theme)"]
+        LocalStorage[("localStorage")]
     end
 
     Components --> State
@@ -122,10 +122,24 @@ graph TB
     Services --> State
     Services --> Utils
     BTService <-->|"Web Bluetooth"| Progressor
-    SheetsService <-->|"HTTPS / Bearer Token"| GoogleSheets
-    SheetsService <-->|"HTTPS / Bearer Token"| GoogleDrive
+    SheetsService <-->|"HTTPS / Bearer"| GoogleSheets
+    SheetsService <-->|"HTTPS / Bearer"| GoogleDrive
     Components <-->|"OAuth Popup"| GoogleAuth
     Theme <--> LocalStorage
+
+    classDef component fill:#1e3a5f,stroke:#3b82f6,color:#e2e8f0
+    classDef store fill:#2d1b4e,stroke:#8b5cf6,color:#e2e8f0
+    classDef service fill:#14402f,stroke:#22c55e,color:#e2e8f0
+    classDef external fill:#3d1f00,stroke:#f97316,color:#e2e8f0
+    classDef util fill:#3d3400,stroke:#eab308,color:#e2e8f0
+    classDef storage fill:#1a2744,stroke:#60a5fa,color:#e2e8f0
+
+    class App,Components component
+    class AuthStore,BTStore,ForceStore,HistoryStore,NamesStore,TrainingStore store
+    class BTService,SheetsService service
+    class Progressor,GoogleAuth,GoogleSheets,GoogleDrive external
+    class Parser,Converter,Theme util
+    class LocalStorage storage
 ```
 
 ---
@@ -136,41 +150,49 @@ graph TB
 
 ```mermaid
 graph TD
-    App["App<br/>(GoogleOAuthProvider wrapper)"]
+    App("App · GoogleOAuthProvider wrapper")
 
-    App --> Header["header<br/>(title + DarkModeToggle)"]
-    App --> TabBar["tab bar<br/>(Force Test / Training)"]
-    App --> Main["main"]
+    App --> Header["header · title + DarkModeToggle"]
+    App --> TabBar["tab bar · Force Test / Training"]
+    App --> Main
 
     Main --> ForceTestTab["Force Test tab"]
-    Main --> TrainingTabComp["TrainingTab"]
+    Main --> TrainingTabComp("TrainingTab")
 
     ForceTestTab --> Left["Left Column"]
     ForceTestTab --> Right["Right Column"]
 
-    Left --> BTControl["BluetoothControl"]
-    Left --> ForceDisplay["ForceDisplay<br/>(live readout)"]
-    Left --> Div1["div<br/>(person + test controls)"]
+    Left --> BTControl("BluetoothControl")
+    Left --> ForceDisplay("ForceDisplay · live readout")
+    Left --> Div1["person + test controls"]
 
-    BTControl --> BTStatus["BluetoothStatus<br/>(connection indicator)"]
-    BTControl --> DeviceSelector["DeviceSelector<br/>(scan & connect modal)"]
-    DeviceSelector --> Modal["Modal"]
-    Modal --> DeviceList["DeviceList"]
+    BTControl --> BTStatus("BluetoothStatus · connection indicator")
+    BTControl --> DeviceSelector("DeviceSelector · scan & connect modal")
+    DeviceSelector --> Modal("Modal")
+    Modal --> DeviceList("DeviceList")
 
-    Div1 --> PersonSelector["PersonSelector<br/>(autocomplete dropdown)"]
-    Div1 --> ForceTest["ForceTest<br/>(Record / Reset / Tare)"]
+    Div1 --> PersonSelector("PersonSelector · autocomplete dropdown")
+    Div1 --> ForceTest("ForceTest · Record / Reset / Tare")
 
-    Right --> Div2["div<br/>(auth + history)"]
-    Div2 --> GoogleAuth["GoogleAuth"]
-    Div2 --> HistoryChart["HistoryChart<br/>(Recharts LineChart)"]
-    GoogleAuth --> UserProfile["UserProfile<br/>(avatar + logout)"]
-    GoogleAuth --> SheetsStatus["GoogleSheetsStatus<br/>(create / verify sheet)"]
+    Right --> Div2["auth + history"]
+    Div2 --> GoogleAuth("GoogleAuth")
+    Div2 --> HistoryChart("HistoryChart · Recharts LineChart")
+    GoogleAuth --> UserProfile("UserProfile · avatar + logout")
+    GoogleAuth --> SheetsStatus("GoogleSheetsStatus · create / verify sheet")
 
-    TrainingTabComp --> RoutineSelector["RoutineSelector<br/>(routine cards + MVC input)"]
-    TrainingTabComp --> HandIndicator["HandIndicator<br/>(SVG left/right hands)"]
-    TrainingTabComp --> TrainingGraph["TrainingGraph<br/>(Recharts AreaChart)"]
-    TrainingTabComp --> SessionProgress["SessionProgress<br/>(set/rep/rest countdown)"]
-    TrainingTabComp --> SessionControls["SessionControls<br/>(Start / Stop)"]
+    TrainingTabComp --> RoutineSelector("RoutineSelector · routine cards + MVC input")
+    TrainingTabComp --> HandIndicator("HandIndicator · SVG left/right hands")
+    TrainingTabComp --> TrainingGraph("TrainingGraph · Recharts AreaChart")
+    TrainingTabComp --> SessionProgress("SessionProgress · set/rep/rest countdown")
+    TrainingTabComp --> SessionControls("SessionControls · Start / Stop")
+
+    classDef container fill:#1e3a5f,stroke:#3b82f6,color:#e2e8f0
+    classDef feature fill:#14402f,stroke:#22c55e,color:#e2e8f0
+    classDef layout fill:#1a1a2e,stroke:#475569,color:#94a3b8
+
+    class App,BTControl,TrainingTabComp container
+    class ForceDisplay,BTStatus,DeviceSelector,Modal,DeviceList,PersonSelector,ForceTest,HistoryChart,GoogleAuth,UserProfile,SheetsStatus,RoutineSelector,HandIndicator,TrainingGraph,SessionProgress,SessionControls feature
+    class Header,TabBar,Main,Left,Right,Div1,Div2,ForceTestTab layout
 ```
 
 ### 4.2 Component Responsibilities
@@ -254,12 +276,12 @@ Six independent Zustand stores. Each component subscribes only to the slice it n
 ```mermaid
 graph LR
     subgraph Stores["Zustand Stores"]
-        AuthStore["authStore<br/>─────────<br/>isAuthenticated: bool<br/>userInfo: UserInfo | null"]
-        BTStore["bluetoothStore<br/>─────────<br/>isConnected: bool<br/>isConnecting: bool"]
-        ForceStore["forceStore<br/>─────────<br/>readings: ForceReading[]<br/>isRecording: bool<br/>selectedPerson: string | null<br/>highestForce: number"]
-        HistoryStore["historyStore<br/>─────────<br/>history: HistoryEntry[]<br/>isLoadingHistory: bool"]
-        NamesStore["namesStore<br/>─────────<br/>localNames: string[]"]
-        TrainingStore["trainingStore<br/>─────────<br/>routine: RoutineId | null<br/>mvc: number (lbs)<br/>phase: idle|rep|rest|complete<br/>colorState: neutral|orange|green<br/>activeHand: left|right<br/>currentRep/Set: number<br/>repGraphData: RepDataPoint[]"]
+        AuthStore[("authStore<br/>─────────<br/>isAuthenticated: bool<br/>userInfo: UserInfo | null")]
+        BTStore[("bluetoothStore<br/>─────────<br/>isConnected: bool<br/>isConnecting: bool")]
+        ForceStore[("forceStore<br/>─────────<br/>readings: ForceReading[]<br/>isRecording: bool<br/>selectedPerson: string | null<br/>highestForce: number")]
+        HistoryStore[("historyStore<br/>─────────<br/>history: HistoryEntry[]<br/>isLoadingHistory: bool")]
+        NamesStore[("namesStore<br/>─────────<br/>localNames: string[]")]
+        TrainingStore[("trainingStore<br/>─────────<br/>routine: RoutineId | null<br/>mvc: number (lbs)<br/>phase: idle|rep|rest|complete<br/>colorState: neutral|orange|green<br/>activeHand: left|right<br/>currentRep/Set: number<br/>repGraphData: RepDataPoint[]")]
     end
 
     subgraph Writers["State Writers"]
@@ -280,6 +302,12 @@ graph LR
         PersonSelector -->|"reads"| AuthStore
         BTStatus -->|"reads"| BTStore
     end
+
+    classDef store fill:#2d1b4e,stroke:#8b5cf6,color:#e2e8f0
+    classDef component fill:#1e3a5f,stroke:#3b82f6,color:#e2e8f0
+
+    class AuthStore,BTStore,ForceStore,HistoryStore,NamesStore,TrainingStore store
+    class GoogleAuth,DeviceSelector,BluetoothService,ForceTest,PersonSelector,SheetsService,ForceDisplay,HistoryChart,BTStatus component
 ```
 
 ### 5.1 Store Interaction Matrix
@@ -299,16 +327,22 @@ graph LR
 
 ```mermaid
 sequenceDiagram
+    autonumber
+    box rgb(30,58,95) Browser
     participant User
     participant DeviceSelector
     participant BluetoothService
-    participant BLEDevice as Tindeq Progressor (BLE)
     participant ForceReader
     participant Parser
     participant bluetoothStore
     participant ForceStore
     participant ForceDisplay
     participant ForceTest
+    participant GoogleSheetsService
+    end
+    box rgb(61,31,0) BLE Device
+    participant BLEDevice as Tindeq Progressor
+    end
 
     User->>DeviceSelector: Click "Scan"
     DeviceSelector->>BluetoothService: scanForDevices()
@@ -346,17 +380,27 @@ sequenceDiagram
 
 ```mermaid
 graph LR
-    subgraph BLEPacket["BLE Characteristic Value (DataView)"]
-        B0["Byte 0<br/>(opcode)"]
-        B1["Byte 1<br/>(status)"]
-        B2_5["Bytes 2–5<br/>(float32 LE)<br/>raw weight kg"]
-        B6_end["Bytes 6+<br/>(ignored)"]
+    subgraph BLEPacket["BLE Characteristic Value — DataView"]
+        B0["Byte 0 · opcode"]
+        B1["Byte 1 · status"]
+        B2_5["Bytes 2–5<br/>float32 LE · raw weight kg"]
+        B6_end["Bytes 6+ · ignored"]
     end
 
-    B2_5 -->|"getFloat32(2, true)"| Weight["weight (kg)"]
-    Weight -->|"Math.round(× 22.04) / 10"| Newtons["force (N)"]
-    Newtons -->|"max(force, 0)"| Clamped["clamped force (N)"]
-    Clamped --> ForceReading["ForceReading<br/>{ timestamp: Date.now(), force: number }"]
+    B2_5 -->|"getFloat32(2, true)"| Weight("weight · kg")
+    Weight -->|"Math.round(× 22.04) / 10"| Newtons("force · N")
+    Newtons -->|"max(force, 0)"| Clamped("clamped force · N")
+    Clamped --> ForceReading[("ForceReading<br/>{ timestamp: Date.now(), force: number }")]
+
+    classDef ignored fill:#1a1a2e,stroke:#475569,color:#64748b
+    classDef raw fill:#3d1f00,stroke:#f97316,color:#e2e8f0
+    classDef processed fill:#14402f,stroke:#22c55e,color:#e2e8f0
+    classDef output fill:#2d1b4e,stroke:#8b5cf6,color:#e2e8f0
+
+    class B0,B1,B6_end ignored
+    class B2_5 raw
+    class Weight,Newtons,Clamped processed
+    class ForceReading output
 ```
 
 ---
@@ -365,15 +409,21 @@ graph LR
 
 ```mermaid
 sequenceDiagram
+    autonumber
+    box rgb(30,58,95) Browser
     participant User
     participant GoogleAuth as GoogleAuth Component
-    participant OAuthProvider as Google OAuth 2.0
     participant AuthStore
     participant SheetsService as GoogleSheetsService
+    participant HistoryStore
+    participant PersonSelector
+    end
+    box rgb(61,31,0) Google Cloud
+    participant OAuthProvider as Google OAuth 2.0
+    participant GoogleAPI as Google APIs
     participant DriveAPI as Google Drive API
     participant SheetsAPI as Google Sheets API
-    participant GoogleAPI as Google APIs
-    participant PersonSelector
+    end
 
     User->>GoogleAuth: Click "Sign in with Google"
     GoogleAuth->>OAuthProvider: useGoogleLogin() → OAuth popup
@@ -504,16 +554,19 @@ classDiagram
 
 ```mermaid
 graph TB
-    subgraph TindeqService["Tindeq GATT Service<br/>7e4e1701-..."]
-        NotifyChar["Notify Characteristic<br/>7e4e1702-...<br/>(READ + NOTIFY)<br/>Force readings"]
-        ControlChar["Control Characteristic<br/>7e4e1703-...<br/>(WRITE)<br/>Commands"]
+    BluetoothService["BluetoothService"]
+    ForceReader["ForceReader"]
+
+    subgraph TindeqService["Tindeq GATT Service · 7e4e1701-..."]
+        NotifyChar["Notify Characteristic<br/>7e4e1702-... · READ + NOTIFY<br/>Force readings"]
+        ControlChar["Control Characteristic<br/>7e4e1703-... · WRITE<br/>Commands"]
     end
 
     subgraph Commands["Control Commands"]
-        Start["0x65 — START_SAMPLING"]
-        Stop["0x66 — STOP_SAMPLING"]
-        Tare["0x64 — TARE"]
-        Disconnect["0x6E — DISCONNECT"]
+        Start("0x65 · START_SAMPLING")
+        Stop("0x66 · STOP_SAMPLING")
+        Tare("0x64 · TARE")
+        Disconnect("0x6E · DISCONNECT")
     end
 
     BluetoothService -->|"writeValue"| ControlChar
@@ -521,12 +574,21 @@ graph TB
     ControlChar --> Stop
     ControlChar --> Tare
     ControlChar --> Disconnect
-    NotifyChar -->|"characteristicvaluechanged<br/>@~100 Hz"| ForceReader
+    NotifyChar -->|"characteristicvaluechanged @ ~100 Hz"| ForceReader
+
+    classDef svc fill:#1e3a5f,stroke:#3b82f6,color:#e2e8f0
+    classDef char fill:#2d1b4e,stroke:#8b5cf6,color:#e2e8f0
+    classDef cmd fill:#14402f,stroke:#22c55e,color:#e2e8f0
+
+    class BluetoothService,ForceReader svc
+    class NotifyChar,ControlChar char
+    class Start,Stop,Tare,Disconnect cmd
 ```
 
 ### 9.2 Connection State Machine
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#1e3a5f', 'primaryTextColor': '#e2e8f0', 'primaryBorderColor': '#3b82f6', 'lineColor': '#64748b', 'secondaryColor': '#14402f', 'tertiaryColor': '#2d1b4e', 'background': '#0f172a'}}}%%
 stateDiagram-v2
     [*] --> Disconnected
 
@@ -568,17 +630,25 @@ Spreadsheet: "Tindeq Force Logger"
 
 ```mermaid
 flowchart LR
-    ForceTest -->|"{ name, highestForce, Date.now() }"| AppendFn
+    ForceTest("ForceTest") -->|"name, highestForce, Date.now()"| AppendFn
 
     subgraph AppendFn["appendTestResult()"]
         TS["format(ts, 'yyyy-MM-dd HH:mm:ss')"]
         Conv["convertForce(N)<br/>→ { lbs, kg }"]
-        Row["[timestamp, name, N, lbs, kg, '']"]
+        Row["[ timestamp, name, N, lbs, kg, '' ]"]
     end
 
-    AppendFn -->|"POST :append<br/>Data!A:F"| SheetsAPI["Google Sheets API"]
-    SheetsAPI -->|"UNIQUE formula auto-updates"| Overview["Overview!A2:A<br/>(names list)"]
-    Overview -->|"getNames()"| PersonSelector
+    AppendFn -->|"POST :append · Data!A:F"| SheetsAPI[("Google Sheets API")]
+    SheetsAPI -->|"UNIQUE formula auto-updates"| Overview[("Overview!A2:A<br/>names list")]
+    Overview -->|"getNames()"| PersonSelector("PersonSelector")
+
+    classDef component fill:#1e3a5f,stroke:#3b82f6,color:#e2e8f0
+    classDef fn fill:#14402f,stroke:#22c55e,color:#e2e8f0
+    classDef external fill:#3d1f00,stroke:#f97316,color:#e2e8f0
+
+    class ForceTest,PersonSelector component
+    class TS,Conv,Row fn
+    class SheetsAPI,Overview external
 ```
 
 ---
@@ -588,27 +658,37 @@ flowchart LR
 ```mermaid
 graph TB
     subgraph Browser["Browser Security Context"]
-        COOP["Cross-Origin-Opener-Policy:<br/>same-origin-allow-popups<br/>(enables OAuth popup)"]
-        COEP["Cross-Origin-Embedder-Policy:<br/>require-corp<br/>(enables Web Bluetooth)"]
-        HTTPS["HTTPS required<br/>(Web Bluetooth prerequisite)"]
+        COOP["Cross-Origin-Opener-Policy<br/>same-origin-allow-popups<br/>enables OAuth popup"]
+        COEP["Cross-Origin-Embedder-Policy<br/>require-corp<br/>enables Web Bluetooth"]
+        HTTPS["HTTPS required<br/>Web Bluetooth prerequisite"]
     end
 
     subgraph Auth["Authentication"]
         OAuth["Google OAuth 2.0 PKCE<br/>No client secret exposed"]
-        Scopes["Minimal scopes:<br/>• spreadsheets<br/>• drive.file<br/>• openid / email / profile"]
-        Token["Access token:<br/>• Memory only (not localStorage)<br/>• Short-lived<br/>• Used as Bearer header"]
+        Scopes["Minimal scopes<br/>• spreadsheets<br/>• drive.file<br/>• openid / email / profile"]
+        Token["Access token<br/>• Memory only — not localStorage<br/>• Short-lived · Bearer header"]
     end
 
     subgraph BLE["Bluetooth Security"]
-        Permission["User explicit permission<br/>per device (browser prompt)"]
+        Permission["User explicit permission<br/>per device · browser prompt"]
         Local["Device pairing local-only<br/>No network exposure"]
     end
 
     subgraph Data["Data Security"]
-        NoSecrets["No secrets in source code<br/>(VITE_GOOGLE_CLIENT_ID is public)"]
-        UserOwned["Data stored in user's<br/>own Google Drive/Sheets"]
-        NoBackend["No backend = no server<br/>attack surface"]
+        NoSecrets["No secrets in source code<br/>VITE_GOOGLE_CLIENT_ID is public"]
+        UserOwned["Data stored in user's<br/>own Google Drive / Sheets"]
+        NoBackend["No backend<br/>no server attack surface"]
     end
+
+    classDef browserSec fill:#1e3a5f,stroke:#3b82f6,color:#e2e8f0
+    classDef authSec fill:#2d1b4e,stroke:#8b5cf6,color:#e2e8f0
+    classDef bleSec fill:#14402f,stroke:#22c55e,color:#e2e8f0
+    classDef dataSec fill:#3d3400,stroke:#eab308,color:#e2e8f0
+
+    class COOP,COEP,HTTPS browserSec
+    class OAuth,Scopes,Token authSec
+    class Permission,Local bleSec
+    class NoSecrets,UserOwned,NoBackend dataSec
 ```
 
 ---
@@ -622,24 +702,34 @@ graph TB
     end
 
     subgraph Build["Build Pipeline"]
-        ViteBuild["vite build<br/>→ dist/"]
-        Assets["dist/<br/>├── index.html<br/>├── assets/<br/>│   ├── index-[hash].js<br/>│   └── index-[hash].css<br/>└── _headers (CF)"]
+        ViteBuild["vite build → dist/"]
+        Assets["dist/<br/>├── index.html<br/>├── assets/<br/>│   ├── index-[hash].js<br/>│   └── index-[hash].css<br/>└── _headers"]
     end
 
     subgraph Deploy["Deployment Options"]
-        CF["Cloudflare Pages<br/>(wrangler.jsonc)<br/>_headers: COEP/COOP"]
-        Static["Any static host<br/>(requires custom headers)"]
+        CF("Cloudflare Pages<br/>wrangler.jsonc · _headers: COEP/COOP")
+        Static("Any static host<br/>requires custom headers")
     end
 
     subgraph Runtime["Runtime Requirements"]
-        Chrome["Chrome / Edge only<br/>(Web Bluetooth support)"]
-        HTTPS2["HTTPS required"]
-        GoogleOAuth["Google OAuth<br/>consent screen"]
+        Chrome("Chrome / Edge only<br/>Web Bluetooth support")
+        HTTPS2("HTTPS required")
+        GoogleOAuth("Google OAuth<br/>consent screen")
     end
 
     Dev --> Build
     Build --> Deploy
     Deploy --> Runtime
+
+    classDef dev fill:#1e3a5f,stroke:#3b82f6,color:#e2e8f0
+    classDef build fill:#2d1b4e,stroke:#8b5cf6,color:#e2e8f0
+    classDef deploy fill:#14402f,stroke:#22c55e,color:#e2e8f0
+    classDef runtime fill:#3d1f00,stroke:#f97316,color:#e2e8f0
+
+    class Vite dev
+    class ViteBuild,Assets build
+    class CF,Static deploy
+    class Chrome,HTTPS2,GoogleOAuth runtime
 ```
 
 ### 12.1 Required HTTP Headers (Production)
@@ -740,8 +830,8 @@ These are mandatory — without them, either the OAuth popup is blocked or Web B
 How modules import each other — arrows point from importer to dependency.
 
 ```mermaid
-graph TD
-    subgraph Components
+graph LR
+    subgraph Components["React Components"]
         App
         BluetoothControl
         DeviceSelector
@@ -756,7 +846,7 @@ graph TD
         BluetoothStatus
     end
 
-    subgraph Stores
+    subgraph Stores["Zustand Stores"]
         authStore
         bluetoothStore
         forceStore
@@ -764,15 +854,15 @@ graph TD
         namesStore
     end
 
-    subgraph Services
-        BTIndex["bluetooth/index.ts<br/>(BluetoothService)"]
+    subgraph Services["Service Layer"]
+        BTIndex["bluetooth/index.ts"]
         BTConn["bluetooth/connection.ts"]
         BTReader["bluetooth/force-reader.ts"]
         BTParser["bluetooth/parser.ts"]
         SheetsService["googleSheets.ts"]
     end
 
-    subgraph Utils
+    subgraph Utils["Utilities"]
         ForceConverter["forceConversion.ts"]
         BTConstants["constants/bluetooth.ts"]
         useTheme
@@ -809,6 +899,16 @@ graph TD
     BTReader --> BTParser
     BTReader --> BTConstants
     BTConn --> BTConstants
+
+    classDef component fill:#1e3a5f,stroke:#3b82f6,color:#e2e8f0
+    classDef store fill:#2d1b4e,stroke:#8b5cf6,color:#e2e8f0
+    classDef service fill:#14402f,stroke:#22c55e,color:#e2e8f0
+    classDef util fill:#3d3400,stroke:#eab308,color:#e2e8f0
+
+    class App,BluetoothControl,DeviceSelector,ForceDisplay,ForceTest,PersonSelector,HistoryChart,GoogleAuth,GoogleSheetsStatus,UserProfile,DarkModeToggle,BluetoothStatus component
+    class authStore,bluetoothStore,forceStore,historyStore,namesStore store
+    class BTIndex,BTConn,BTReader,BTParser,SheetsService service
+    class ForceConverter,BTConstants,useTheme util
 ```
 
 ---
@@ -821,17 +921,23 @@ Each component subscribes to the **minimum slice** of state needed via Zustand s
 
 ```mermaid
 graph LR
-    subgraph ForceStore["forceStore — updates at 100Hz"]
+    subgraph ForceStore["forceStore — updates at 100 Hz"]
         readings
         isRecording
         selectedPerson
         highestForce
     end
 
-    ForceDisplay -->|"readings, highestForce, isRecording"| ForceStore
-    ForceTest -->|"highestForce, selectedPerson, isRecording"| ForceStore
-    HistoryChart -->|"selectedPerson"| ForceStore
-    PersonSelector -->|"selectedPerson"| ForceStore
+    ForceDisplay("ForceDisplay") -->|"readings, highestForce, isRecording"| ForceStore
+    ForceTest("ForceTest") -->|"highestForce, selectedPerson, isRecording"| ForceStore
+    HistoryChart("HistoryChart") -->|"selectedPerson"| ForceStore
+    PersonSelector("PersonSelector") -->|"selectedPerson"| ForceStore
+
+    classDef component fill:#1e3a5f,stroke:#3b82f6,color:#e2e8f0
+    classDef field fill:#2d1b4e,stroke:#8b5cf6,color:#e2e8f0
+
+    class ForceDisplay,ForceTest,HistoryChart,PersonSelector component
+    class readings,isRecording,selectedPerson,highestForce field
 ```
 
 - `ForceDisplay` uses a single multi-field selector — re-renders on every reading (intentional: displays live data)
@@ -859,21 +965,27 @@ BLE event @ 100Hz
 ```mermaid
 flowchart TD
     subgraph BLE["Bluetooth Errors"]
-        B1["User denies<br/>device permission"] -->|"requestDevice() throws"| B1R["Show 'Scan failed'<br/>UI reset to idle"]
-        B2["Device out of range"] -->|"gattserverdisconnected event"| B2R["bluetoothStore.setConnected(false)<br/>User must reconnect"]
-        B3["GATT characteristic<br/>not found"] -->|"getCharacteristic() throws"| B3R["console.error<br/>Connection aborted"]
+        B1["User denies<br/>device permission"] -->|"requestDevice() throws"| B1R(["Show 'Scan failed'<br/>UI reset to idle"])
+        B2["Device out of range"] -->|"gattserverdisconnected event"| B2R(["bluetoothStore.setConnected(false)<br/>User must reconnect"])
+        B3["GATT characteristic<br/>not found"] -->|"getCharacteristic() throws"| B3R(["console.error<br/>Connection aborted"])
     end
 
     subgraph OAuth["Auth Errors"]
-        A1["User cancels<br/>OAuth popup"] -->|"onError callback"| A1R["Stay unauthenticated<br/>No state change"]
-        A2["Token expired<br/>during session"] -->|"Sheets API 401"| A2R["console.error<br/>Operation fails silently"]
+        A1["User cancels<br/>OAuth popup"] -->|"onError callback"| A1R(["Stay unauthenticated<br/>No state change"])
+        A2["Token expired<br/>during session"] -->|"Sheets API 401"| A2R(["console.error<br/>Operation fails silently"])
     end
 
     subgraph Sheets["Google Sheets Errors"]
-        S1["Sheet not found<br/>on first login"] -->|"checkSpreadsheetExists()=false"| S1R["Show 'Create Sheet' button"]
-        S2["Append fails<br/>(quota / network)"] -->|"catch in appendTestResult"| S2R["console.error<br/>No user feedback (current gap)"]
-        S3["getHistory fails"] -->|"catch in getHistoryForPerson"| S3R["historyStore.history = []<br/>Empty chart shown"]
+        S1["Sheet not found<br/>on first login"] -->|"checkSpreadsheetExists()=false"| S1R(["Show 'Create Sheet' button"])
+        S2["Append fails<br/>quota / network"] -->|"catch in appendTestResult"| S2R(["console.error<br/>No user feedback"])
+        S3["getHistory fails"] -->|"catch in getHistoryForPerson"| S3R(["historyStore.history = []<br/>Empty chart shown"])
     end
+
+    classDef error fill:#3d1f00,stroke:#f97316,color:#e2e8f0
+    classDef resolution fill:#14402f,stroke:#22c55e,color:#e2e8f0
+
+    class B1,B2,B3,A1,A2,S1,S2,S3 error
+    class B1R,B2R,B3R,A1R,A2R,S1R,S2R,S3R resolution
 ```
 
 ### 16.2 Known resilience gaps
@@ -909,11 +1021,19 @@ The display/persistence conversions use reciprocal multiplication rather than di
 
 ```mermaid
 graph LR
-    Raw["Raw float32<br/>(sensor units ≈ kg)"]
-    Raw -->|"Math.round(× 22.04) / 10"| N["Newtons (N)<br/>master unit in forceStore"]
-    N -->|"× 0.101972"| KG["Kilograms (kg)<br/>ForceDisplay + Sheets"]
-    N -->|"× 0.224809"| LBS["Pounds (lbs)<br/>ForceDisplay + Sheets"]
-    N -->|"identity"| NN["Newtons (N)<br/>ForceDisplay"]
+    Raw("Raw float32<br/>sensor units ≈ kg")
+    Raw -->|"Math.round(× 22.04) / 10"| N[("Newtons (N)<br/>master unit in forceStore")]
+    N -->|"× 0.101972"| KG("Kilograms (kg)<br/>ForceDisplay + Sheets")
+    N -->|"× 0.224809"| LBS("Pounds (lbs)<br/>ForceDisplay + Sheets")
+    N -->|"identity"| NN("Newtons (N)<br/>ForceDisplay")
+
+    classDef raw fill:#3d1f00,stroke:#f97316,color:#e2e8f0
+    classDef master fill:#2d1b4e,stroke:#8b5cf6,color:#e2e8f0
+    classDef display fill:#14402f,stroke:#22c55e,color:#e2e8f0
+
+    class Raw raw
+    class N master
+    class KG,LBS,NN display
 ```
 
 All intermediate values are discarded — only Newtons are stored in `forceStore`. Conversions happen at render time in `ForceDisplay` and at save time in `appendTestResult`.
@@ -926,13 +1046,23 @@ All intermediate values are discarded — only Newtons are stored in `forceStore
 flowchart LR
     subgraph useTheme["useTheme Hook"]
         Init["Read localStorage('theme')<br/>or prefers-color-scheme"]
-        Toggle["toggle()<br/>→ flip isDark<br/>→ write localStorage<br/>→ set/remove dark class on html element"]
+        Toggle["toggle()<br/>→ flip isDark<br/>→ write localStorage<br/>→ set/remove dark class on html"]
     end
 
-    Init --> HTMLClass["html element gets class='dark'"]
-    HTMLClass --> Tailwind["Tailwind dark: variants<br/>activate globally"]
+    Init --> HTMLClass("html element<br/>class='dark'")
+    HTMLClass --> Tailwind("Tailwind dark: variants<br/>activate globally")
     Toggle --> Init
-    DarkModeToggle -->|"calls toggle()"| Toggle
+    DarkModeToggle("DarkModeToggle") -->|"calls toggle()"| Toggle
+
+    classDef hook fill:#2d1b4e,stroke:#8b5cf6,color:#e2e8f0
+    classDef dom fill:#1a2744,stroke:#60a5fa,color:#e2e8f0
+    classDef component fill:#1e3a5f,stroke:#3b82f6,color:#e2e8f0
+    classDef framework fill:#3d3400,stroke:#eab308,color:#e2e8f0
+
+    class Init,Toggle hook
+    class HTMLClass dom
+    class DarkModeToggle component
+    class Tailwind framework
 ```
 
 - Theme is persisted in `localStorage` under key `'theme'`
@@ -947,13 +1077,18 @@ The tare operation zeroes the force sensor, compensating for equipment weight (e
 
 ```mermaid
 sequenceDiagram
+    autonumber
+    box rgb(30,58,95) Browser
     participant User
     participant ForceTest
     participant BluetoothService
     participant ForceReader
-    participant BLEDevice as Tindeq Progressor
     participant forceStore
     participant ForceDisplay
+    end
+    box rgb(61,31,0) BLE Device
+    participant BLEDevice as Tindeq Progressor
+    end
 
     User->>ForceTest: Click "Tare"
     ForceTest->>BluetoothService: tare()
@@ -971,12 +1106,18 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
+    autonumber
+    box rgb(30,58,95) Browser
     participant User
     participant PersonSelector
     participant forceStore
     participant historyStore
     participant SheetsService as GoogleSheetsService
+    participant HistoryChart
+    end
+    box rgb(61,31,0) Google Cloud
     participant SheetsAPI as Google Sheets API
+    end
 
     User->>PersonSelector: Select "Alice" from dropdown
     PersonSelector->>forceStore: setSelectedPerson("Alice")
@@ -1028,18 +1169,34 @@ These are not planned changes — they document logical extension points if requ
 
 ```mermaid
 graph LR
-    SW["Service Worker<br/>(Workbox)"] -->|"cache static assets"| Offline["Offline UI load"]
-    IDB["IndexedDB<br/>(idb-keyval)"] -->|"buffer readings<br/>when network down"| Queue["Sync queue"]
-    Queue -->|"flush on reconnect"| SheetsService["GoogleSheetsService"]
+    SW("Service Worker · Workbox") -->|"cache static assets"| Offline("Offline UI load")
+    IDB("IndexedDB · idb-keyval") -->|"buffer readings<br/>when network down"| Queue("Sync queue")
+    Queue -->|"flush on reconnect"| SheetsService("GoogleSheetsService")
+
+    classDef future fill:#2d1b4e,stroke:#8b5cf6,color:#e2e8f0
+    classDef storage fill:#1a2744,stroke:#60a5fa,color:#e2e8f0
+    classDef svc fill:#14402f,stroke:#22c55e,color:#e2e8f0
+
+    class SW,Queue future
+    class IDB,Offline storage
+    class SheetsService svc
 ```
 
 ### 23.2 Multi-device / multi-user scaling
 
 ```mermaid
 graph LR
-    CloudFn["Cloud Function<br/>(optional backend)"] -->|"token refresh<br/>batch writes"| SheetsAPI
-    Supabase["Supabase / PlanetScale<br/>(alternative DB)"] -->|"real-time sync<br/>multi-user"| App
-    App -->|"currently direct"| SheetsAPI["Google Sheets API"]
+    CloudFn("Cloud Function<br/>optional backend") -->|"token refresh<br/>batch writes"| SheetsAPI("Google Sheets API")
+    Supabase("Supabase / PlanetScale<br/>alternative DB") -->|"real-time sync<br/>multi-user"| App("App")
+    App -->|"currently direct"| SheetsAPI
+
+    classDef future fill:#2d1b4e,stroke:#8b5cf6,color:#e2e8f0
+    classDef external fill:#3d1f00,stroke:#f97316,color:#e2e8f0
+    classDef current fill:#1e3a5f,stroke:#3b82f6,color:#e2e8f0
+
+    class CloudFn,Supabase future
+    class SheetsAPI external
+    class App current
 ```
 
 ### 23.3 BLE reconnection

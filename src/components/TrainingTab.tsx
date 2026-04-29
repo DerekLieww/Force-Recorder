@@ -39,7 +39,7 @@ export function TrainingTab() {
 
   return (
     <div
-      className={`rounded-lg shadow-lg overflow-hidden transition-all duration-300 ${
+      className={`rounded-lg shadow-md overflow-hidden transition-all duration-300 ${
         isColored ? '' : 'bg-white dark:bg-gray-800'
       }`}
       style={isColored ? { background: CONTAINER_BG[colorState] } : undefined}

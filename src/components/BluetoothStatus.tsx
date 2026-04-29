@@ -10,17 +10,17 @@ export function BluetoothStatus() {
       {isConnecting ? (
         <>
           <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
-          <span className="text-blue-700 dark:text-blue-400">Connecting...</span>
+          <span className="hidden sm:inline text-blue-700 dark:text-blue-400">Connecting...</span>
         </>
       ) : isConnected ? (
         <>
           <Bluetooth className="w-5 h-5 text-green-500" />
-          <span className="text-green-700 dark:text-green-400">Connected to Tindeq</span>
+          <span className="hidden sm:inline text-green-700 dark:text-green-400">Connected to Tindeq</span>
         </>
       ) : (
         <>
           <BluetoothOff className="w-5 h-5 text-red-500" />
-          <span className="text-red-700 dark:text-red-400">Not Connected</span>
+          <span className="hidden sm:inline text-red-700 dark:text-red-400">Not Connected</span>
         </>
       )}
     </div>

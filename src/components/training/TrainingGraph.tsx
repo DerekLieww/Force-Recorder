@@ -8,6 +8,7 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from 'recharts';
+import { Activity } from 'lucide-react';
 import { useTrainingStore } from '../../store/trainingStore';
 import { ROUTINES } from '../../constants/training';
 import type { ColorState } from '../../store/trainingStore';
@@ -71,6 +72,12 @@ export function TrainingGraph() {
         )}
       </div>
 
+      {phase === 'idle' && repGraphData.length === 0 ? (
+        <div className="flex-1 flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700 min-h-[200px] gap-2">
+          <Activity className="w-8 h-8 text-gray-300 dark:text-gray-600" />
+          <p className="text-sm text-gray-400 dark:text-gray-500">Start a session to see live force data</p>
+        </div>
+      ) : (
       <div className="flex-1 min-h-0" style={{ minHeight: 200 }}>
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={repGraphData} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
@@ -129,6 +136,7 @@ export function TrainingGraph() {
           </AreaChart>
         </ResponsiveContainer>
       </div>
+      )}
 
       {/* Current force + rep timer */}
       {repGraphData.length > 0 && (

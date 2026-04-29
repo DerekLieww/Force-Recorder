@@ -57,7 +57,8 @@ export function DeviceSelector() {
           className="flex items-center gap-2"
         >
           <Search className="w-4 h-4" />
-          Find Tindeq Device
+          <span className="sm:hidden">Connect</span>
+          <span className="hidden sm:inline">Find Tindeq Device</span>
         </Button>
       ) : (
         <Button

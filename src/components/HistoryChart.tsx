@@ -24,7 +24,14 @@ export function HistoryChart() {
   const gridColor = isDark ? '#374151' : '#f0f0f0';
   const tickColor = isDark ? '#9ca3af' : '#6b7280';
 
-  if (!selectedPerson) return null;
+  if (!selectedPerson) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full gap-2 text-gray-400 dark:text-gray-500">
+        <span className="text-3xl">📊</span>
+        <p className="text-sm text-center">Sign in with Google and select a person<br />to view session history</p>
+      </div>
+    );
+  }
 
   if (isLoadingHistory) {
     return (
